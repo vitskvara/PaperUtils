@@ -1,0 +1,8 @@
+name = "PaperUtils"
+uuid = "0627c08a-0f83-11e9-3a83-e7f68d7a6887"
+authors = ["vit.skvara <vit.skvara@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Missings = "e1d29d7a-bbdc-5cf2-9ac0-f12de2c33e28"
