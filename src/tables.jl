@@ -1,3 +1,99 @@
+"""
+    loadtable(fname, datacols)
+
+Load a csv file into DataFrame, reformatting specified data columnsto floats and missings.
+"""
+function loadtable(fname, datacols)
+    #load the df
+    data = CSV.read(fname)
+
+    # round the nubmers and replace "missing" with actual missing values
+    rounddf!(convertdf!(data, datacols), 6, datacols)
+
+    return data
+end
+
+"""
+    convertdf!(df, datacols)
+
+Convert cells of df to floats or missings - specially crafted for dfs loaded from csvs.
+"""
+function convertdf!(df, datacols)
+    nrows, ncols = size(df)
+
+    # go through the whole df and replace missing strings with actual Missing type
+    # and floats with float
+    if typeof(datacols) == Int64
+        cnames = names(df)[datacols:end]
+    else
+        cnames = names(df)[datacols]
+    end
+
+    for cname in cnames
+        df[ismissing.(df[cname]), cname] = Inf
+        df[cname] = Array{Any,1}(df[cname])
+    end
+
+    for cname in cnames
+        for i in 1:nrows
+            if df[cname][i] == Inf || df[cname][i] == "missing"
+                df[cname][i]=missing
+            elseif df[cname][i]=="NA"
+                df[cname][i]=missing
+            else 
+               df[cname][i]=float(df[cname][i])
+            end
+        end
+    end
+
+    return df
+end
+
+"""
+    convertdf(df, datacols)
+
+Convert cells of df to floats or missings - specially crafted for dfs loaded from csvs.
+"""
+function convertdf(df, datacols)
+    _df = deepcopy(df)
+    return convertdf!(_df)
+end
+
+"""
+   rounddf!(df, n, datacols)
+
+Round values in datacols of df to n valid digits.
+"""
+function rounddf!(df, n, datacols)
+    nrows, ncols = size(df)
+
+    # go through the whole df and replace missing strings with actual Missing type
+    # and floats with float
+    if typeof(datacols) == Int64
+        cnames = names(df)[datacols:end]
+    else
+        cnames = names(df)[datacols]
+    end
+
+    for cname in cnames
+        for i in 1:nrows
+            (ismissing(df[cname][i])) ? df[cname][i]=missing :
+                df[cname][i]=round(float(df[cname][i]),n)
+        end
+    end
+
+    return df
+end
+
+"""
+   rounddf(df, n, datacols)
+
+Round values in datacols of df to n valid digits.
+"""
+function rounddf(df, n, datacols)
+    _df = deepcopy(df)
+    return rounddf!(_df, n, datacols)
+end
 
 """
     eol(s)
