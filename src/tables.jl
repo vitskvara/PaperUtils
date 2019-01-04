@@ -78,7 +78,7 @@ function rounddf!(df, n, datacols)
     for cname in cnames
         for i in 1:nrows
             (ismissing(df[cname][i])) ? df[cname][i]=missing :
-                df[cname][i]=round(float(df[cname][i]),n)
+                df[cname][i]=round(float(df[cname][i]),digits=n)
         end
     end
 
@@ -227,9 +227,11 @@ function rpaddf!(df,n)
 
     for i in 1:nrows
         for j in 1:ncols
-            if typeof(df[i,j]) <: AbstractFloat
+            if typeof(df[i,j]) == String
                 s = split("$(df[i,j])", ".")
-                df[i,j] = "$(s[1]).$(rpad(s[2],n,"0"))"
+                if length(s) > 1
+                    df[i,j] = "$(s[1]).$(rpad(s[2],n,"0"))"
+                end
             end
         end
     end
@@ -266,4 +268,22 @@ function mergedfs(ldf, rdf)
     end
 
     return df
+end
+
+"""
+    cols2string!(df)
+
+Changes the type of all columns of a DataFrame to type string.    
+"""
+cols2string!(df) = map(x->df[x]=string.(df[x]), names(df))
+
+"""
+    cols2string(df)
+
+Changes the type of all columns of a DataFrame to type string.    
+"""
+function cols2string(df) 
+    _df = deepcopy(df)
+    cols2string!(_df)
+    return _df
 end
