@@ -120,15 +120,24 @@ end
 Convert DataFrame to a LaTex table.
 """
 function df2tex(df, caption=""; label = "", pos = "h", align = "c",
-    fitcolumn = false, lasthline = false, firstvline = false)
+    fitcolumn = false, lasthline = false, firstvline = false,
+    asterisk = false, fittext=false, vertcolnames = false)
+    @assert !(fitcolumn & fittext)
     cnames = names(df)
     nrows, ncols = size(df)
 
     # create the table beginning
-    if fitcolumn
-        s = "\\begin{table} \n \\center \n \\resizebox{\\columnwidth}{!}{ \n \\begin{tabular}[$pos]{"
+    if asterisk
+        s = "\\begin{table*} \n "
     else
-        s = "\\begin{table} \n \\center \n \\begin{tabular}[$pos]{"
+        s = "\\begin{table} \n "
+    end
+    if fitcolumn
+        s = string(s, "\\center \n \\resizebox{\\columnwidth}{!}{ \n \\begin{tabular}[$pos]{")
+    elseif fittext
+        s = string(s, "\\center \n \\resizebox{\\textwidth}{!}{ \n \\begin{tabular}[$pos]{")
+    else
+        s = string(s, "\\center \n \\begin{tabular}[$pos]{")
     end
     for n in 1:ncols
         if firstvline && n == 1
@@ -142,7 +151,11 @@ function df2tex(df, caption=""; label = "", pos = "h", align = "c",
     # create the header
     s = wspad(s,2)
     for name in names(df)
-        s = string(s, "$name & ")
+        if vertcolnames
+            s = string(s, "\\rotatebox{90}{$name} & ")
+        else
+            s = string(s, "$name & ")
+        end
     end
     s = eol(s)
     s = wspad(s,2)
@@ -163,7 +176,7 @@ function df2tex(df, caption=""; label = "", pos = "h", align = "c",
 
     # create the table ending
     s = string(s, " \\end{tabular}\n")
-    if fitcolumn
+    if fitcolumn || fittext
         s = string(s, " }\n")
     end
     if caption!=""
@@ -172,7 +185,11 @@ function df2tex(df, caption=""; label = "", pos = "h", align = "c",
     if label!=""
         s = string(s, " \\label{$label} \n")
     end
-    s = string(s, "\\end{table}")
+    if asterisk
+        s = string(s, "\\end{table*}")
+    else
+        s = string(s, "\\end{table}")
+    end
 
     return s
 end
@@ -287,3 +304,10 @@ function cols2string(df)
     cols2string!(_df)
     return _df
 end
+
+"""
+    round_string_rpad(df, ndecimal, cols)
+
+Round a df, convert columns defined in cols to string and rpad with zeros.
+"""
+round_string_rpad(df, ndecimal, cols) = PaperUtils.rpaddf(PaperUtils.cols2string(PaperUtils.rounddf(df, ndecimal, cols)), ndecimal)
