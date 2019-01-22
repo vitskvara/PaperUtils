@@ -150,8 +150,8 @@ function df2tex(df, caption=""; label = "", pos = "h", align = "c",
 
     # create the header
     s = wspad(s,2)
-    for name in names(df)
-        if vertcolnames
+    for (i,name) in enumerate(names(df))
+        if vertcolnames && i > 1
             s = string(s, "\\rotatebox{90}{$name} & ")
         else
             s = string(s, "$name & ")
@@ -310,4 +310,5 @@ end
 
 Round a df, convert columns defined in cols to string and rpad with zeros.
 """
-round_string_rpad(df, ndecimal, cols) = PaperUtils.rpaddf(PaperUtils.cols2string(PaperUtils.rounddf(df, ndecimal, cols)), ndecimal)
+round_string_rpad(df, ndecimal, cols) = 
+    PaperUtils.rpaddf(PaperUtils.cols2string(PaperUtils.rounddf(df, ndecimal, cols)), ndecimal)
