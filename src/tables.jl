@@ -77,8 +77,8 @@ function rounddf!(df, n, datacols)
 
     for cname in cnames
         for i in 1:nrows
-            (ismissing(df[cname][i])) ? df[cname][i]=missing :
-                df[cname][i]=round(float(df[cname][i]),digits=n)
+            (ismissing(df[!,cname][i])) ? df[!,cname][i]=missing :
+                df[!,cname][i]=round(float(df[!,cname][i]),digits=n)
         end
     end
 
@@ -292,7 +292,7 @@ end
 
 Changes the type of all columns of a DataFrame to type string.    
 """
-cols2string!(df) = map(x->df[x]=string.(df[x]), names(df))
+cols2string!(df) = map(x->df[!,x]=string.(df[!,x]), names(df))
 
 """
     cols2string(df)
