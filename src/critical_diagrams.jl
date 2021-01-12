@@ -1,3 +1,18 @@
+using Distributions
+
+# R = mean ranks, n = number of datasets, k = number of models
+friedman_test_statistic(R::Vector,n::Int,k::Int) = 12*n/(k*(k+1))*(sum(R.^2) - k*(k+1)^2/4)
+# k = number of models
+crit_chisq(α::Real, df::Int) = quantile(Chisq(df), 1-α)
+friedman_critval(α::Real, k::Int) = crit_chisq(α/2, k-1)
+
+
+# k = number of groups, df = (N - k) = (total samples - k)
+crit_srd(α::Real, k::Real, df::Real) = 
+    (isnan(k) | isnan(df)) ? NaN : quantile(StudentizedRange(df, k), 1-α)
+nemenyi_cd(k::Int, n::Int, α::Real) = sqrt(k*(k+1)/(6*n))*crit_srd(α, k, Inf)/sqrt(2)
+
+
 function ranks2tikzcd(ranks, algnames, c, caption = ""; label = "", pos = "h")
     n = length(ranks)
     @assert n == length(algnames)
