@@ -114,8 +114,9 @@ function wspad(s, n)
 end
 
 """
-    df2tex(df, caption="", pos = "h", align = "c";
-           fitcolumn = false, lasthline = false)
+    df2tex(df, caption=""; label="", pos = "h", align = "c";
+           fitcolumn = false, lasthline = false, firstvline = false,
+    asterisk = false, fittext=false, vertcolnames = false)
 
 Convert DataFrame to a LaTex table.
 """

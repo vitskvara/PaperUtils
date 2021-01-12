@@ -2,7 +2,10 @@
     rankdf(df, [rev])
 
 Compute row ranks for a DataFrame and add bottom line with mean ranks.
-Ties receive average rank.
+Ties receive average rank. The columns of df are assigned to individual algorithms.
+Rows of df are the individual experiments (e.g. datasets) across which we compare the 
+algorithms.
+
 rev (default true) - higher score is better
 """
 function rankdf(df, rev = true)
@@ -22,20 +25,20 @@ function rankdf(df, rev = true)
         arow = collect(skipmissing(arow))
         for alg in algnames[isort]
             if ismissing(row[alg][1])
-                _df[alg][i] = missing
+                _df[!,salg][i] = missing
             else
                 # this decides ties
                 val = row[alg][1]
                 nties = size(arow[arow.==val],1) - 1
                 if nties > 0
-                    _df[alg][i] = (sum((j-tiec):(j+nties-tiec)))/(nties+1)
+                    _df[!,alg][i] = (sum((j-tiec):(j+nties-tiec)))/(nties+1)
                     tiec +=1
                     # restart tie counter
                     if tiec > nties
                         tiec = 0
                     end
                 else
-                    _df[alg][i] = j
+                    _df[!,alg][i] = j
                 end
                 j+=1
             end
@@ -43,15 +46,17 @@ function rankdf(df, rev = true)
     end
 
     # append the final row with mean ranks
-    push!(_df, cat(1,Array{Any}(["mean rank"]), zeros(nalgs)))
+    push!(_df, vcat(Array{Any}(["mean rank"]), zeros(nalgs)))
     for alg in algnames
-        _df[alg][end] = Statistics.mean(_df[alg][1:end-1][.!isnan.(_df[alg][1:end-1])])
+        _df[!,alg][end] = Statistics.mean(_df[!,alg][1:end-1][.!isnan.(_df[!,alg][1:end-1])])
     end
 
     return _df
 end
 
-function friedman_statistic(X)
+friedman_statistic(R::Vector,n::Int,k::Int) = 12*n/(k*(k+1))*(sum(R.^2) - k*(k+1)^2/4)
+function friedman_statistic(X::Matrix)
     n,k=size(X)
-    Q = 12*n/(k*(k+1))*sum((Statistics.mean(X,dims=1) .- (k+1)/2).^2)
+    friedman_statistic(vec(Statistics.mean(X,dims=1)), n, k)
 end
+
