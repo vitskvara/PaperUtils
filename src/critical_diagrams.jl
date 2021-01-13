@@ -12,35 +12,25 @@ crit_srd(α::Real, k::Real, df::Real) =
     (isnan(k) | isnan(df)) ? NaN : quantile(StudentizedRange(df, k), 1-α)
 nemenyi_cd(k::Int, n::Int, α::Real) = sqrt(k*(k+1)/(6*n))*crit_srd(α, k, Inf)/sqrt(2)
 
-
-function ranks2tikzcd(ranks, algnames, c, caption = ""; label = "", pos = "h")
+function ranks2tikzcd(ranks, algnames, c, caption = ""; scale=1.0,  
+    vpad=0.3, label = "", pos = "h", levelwidth=0.06, vdist=0.1)
     n = length(ranks)
     @assert n == length(algnames)
     ranks = reshape(ranks, n)
-    for i in 1:length(ranks)
-        ranks[i] = Float64(parse(ranks[i]))
-    end
 
     # header
-    s = "\\begin{figure}[$pos] \n \\center \n \\begin{tikzpicture} \n"
+    s = "\\begin{tikzpicture}[scale=$(scale)] \n"
     s = wspad(s, 2)
     #axis
     s = string(s, drawaxis(ranks))
     # nodes
-    s = string(s, drawnodes(ranks, algnames))
+    s = string(s, drawnodes(ranks, algnames; vpad=vpad))
     # levels
-    s = string(s, drawlevels(ranks, c))
+    s = string(s, drawlevels(ranks, c; levelwidth=levelwidth, vdist=vdist))
     # end of figure
     s = wspad(s, 1)
     s = string(s, "\\end{tikzpicture} \n")
-    if caption!=""
-        s = string(s, " \\caption{$caption} \n")
-    end
-    if label!=""
-        s = string(s, " \\label{$label} \n")
-    end
-    s = string(s, "\\end{figure}")
-
+    
     return s
 end
 
@@ -54,7 +44,7 @@ function drawaxis(ranks)
     return s
 end
 
-function drawnodes(ranks, algnames)
+function drawnodes(ranks, algnames; vpad=0.3)
     isort = sortperm(ranks)
     ranks = ranks[isort]
     algnames = algnames[isort]
@@ -68,59 +58,68 @@ function drawnodes(ranks, algnames)
     for (i, r) in enumerate(ranks)
         s = wspad(s,2)
         if i<=nos
-            s = string(s, "\\draw ($(r),0) -- ($r,$(i*0.3-0.1)) -- ($(mn-0.1), $(i*0.3-0.1)) node[anchor=east] {$(algnames[i])}; \n")
+            s = string(s, "\\draw ($(r),0) -- ($r,$(i*vpad-0.1)) -- ($(mn-0.1), $(i*vpad-0.1)) node[anchor=east] {$(algnames[i])}; \n")
         else
-            s = string(s, "\\draw ($(r),0) -- ($r,$((nor-i)*0.3+0.2)) -- ($(mx+0.1), $((nor-i)*0.3+0.2)) node[anchor=west] {$(algnames[i])}; \n")
+            s = string(s, "\\draw ($(r),0) -- ($r,$((nor-i)*vpad+0.2)) -- ($(mx+0.1), $((nor-i)*vpad+0.2)) node[anchor=west] {$(algnames[i])}; \n")
         end
     end
 
     return s
 end
 
-function drawlevels(ranks, cv)
+function drawlevels(ranks, cv; levelwidth=0.06, vdist=0.1)
     ranks = sort(ranks)
 
     mx = ceil(ranks[end])
     mn = floor(ranks[1])
     nor = length(ranks) # number of ranks
 
-    # generate levels
-    levels = []
-    for (i,r) in enumerate(ranks)
-        if i == nor
-            break
-        elseif ranks[i+1] - r <= cv
-            push!(levels, [r, ranks[i+1], 0.05])
+    # do this differently
+    ranks = sort(ranks)
+
+    mx = ceil(ranks[end])
+    mn = floor(ranks[1])
+    nor = length(ranks) # number of ranks
+
+    # do a matrix that says which ranks are connected
+    con_mat = zeros(nor, nor)
+    for i in 1:nor
+        for j in 1:nor
+            con_mat[i,j] = abs(ranks[j] - ranks[i]) < cv
         end
     end
 
-    # now differentiate them if they should not be at the same heigth
-    i = 1
-    while i <= length(levels)
-        if i == length(levels)
-            break
-        elseif abs(levels[i][1] - levels[i+1][2]) < cv
-            levels[i][2] = levels[i+1][2]
-            splice!(levels, i+1)
+    # now 
+    levels = [] # each element is a tuple containing the (start, end, height) values
+    lastlasti = 0
+    for i in 1:nor
+        if length(levels) == 0
+            global levelh = vdist
+        elseif lastlasti < i
+            global levelh = vdist
         else
-            i += 1
+            lastlevelh = levels[end][end]
+            if lastlevelh == vdist
+                global levelh = lastlevelh + vdist
+            else
+                global levelh = lastlevelh + vdist
+            end
         end
-    end
-
-    for (i,level) in enumerate(levels)
-        if i == length(levels)
-            break
-        elseif abs(level[2] - levels[i+1][1])<0.08 && abs(level[1] - levels[i+1][2]) > cv && level[3] == levels[i+1][3]
-            levels[i+1][3] = level[3] + 0.1
+        startl = ranks[i]
+        lasti = findlast(con_mat[i,:] .== 1)
+        if lasti != nothing && lasti != lastlasti && lasti != i
+            endl = ranks[lasti]
+            push!(levels, (startl, endl, levelh))
         end
+        lastlasti = lasti
     end
 
     # draw them
     s = ""
     for level in levels
         s = wspad(s,2)
-        s = string(s, "\\draw[line width=0.06cm,color=black,draw opacity=1.0] ($(level[1]-0.03),$(level[3])) -- ($(level[2]+0.03),$(level[3])); \n")
+        s = string(s, "\\draw[line width=$(levelwidth)cm,color=black,draw opacity=1.0] ($(level[1]-0.03),$(level[3])) -- ($(level[2]+0.03),$(level[3])); \n")
     end
-#    println(levels)
+
     return s
 end
