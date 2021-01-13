@@ -1,5 +1,5 @@
 # PaperUtils
-Utilities for creating content for LaTex papers with Julia. Implements some utilities for 
+Utilities for creating content for LaTex papers with Julia. Implements some utilities for statistical comparison of classifiers as described in [this paper](http://www.jmlr.org/papers/volume7/demsar06a/demsar06a.pdf).
 
 Computation of ranks across datasets:
 
