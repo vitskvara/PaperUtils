@@ -53,10 +53,3 @@ function rankdf(df, rev = true)
 
     return _df
 end
-
-friedman_statistic(R::Vector,n::Int,k::Int) = 12*n/(k*(k+1))*(sum(R.^2) - k*(k+1)^2/4)
-function friedman_statistic(X::Matrix)
-    n,k=size(X)
-    friedman_statistic(vec(Statistics.mean(X,dims=1)), n, k)
-end
-
