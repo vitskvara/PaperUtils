@@ -40,9 +40,9 @@ rank_df = PaperUtils.rankdf(perf_df)
 
 ```julia
 R = Array(rank_df[end, 2:end])
-n = 4
-k = 3
-α = 0.1
+n = 4 # no. datasets
+k = 3 # no. models
+α = 0.1 
 fts = PaperUtils.friedman_test_statistic(R,n,k)
 7.125
 
