@@ -34,7 +34,7 @@ rank_df = PaperUtils.rankdf(perf_df)
 │ 5   │ mean rank │ 1.0     │ 2.125   │ 2.875   │
 ```
 
-Friedman test decides whether the performance of models based on mean ranks is the same for all comapred models:
+**Friedman test** decides whether the performance of models based on mean ranks is the same for all comapred models:
 
 ```julia
 R = Array(rank_df[end, 2:end])
@@ -48,7 +48,7 @@ ftcv = PaperUtils.friedman_critval(α, k)
 5.99146454710798
 ```
 
-Since `fts>fctv`, the difference in ranks is statistically significant and we can continue with the paired Nemenyi test which compares the differences in mean ranks in two models.
+Since `fts>fctv`, the difference in ranks is statistically significant and we can continue with the paired **Nemenyi test** which compares the differences in mean ranks in two models.
 
 ```julia
 ncd = PaperUtils.nemenyi_cd(k, n, α)
@@ -57,3 +57,20 @@ ncd = PaperUtils.nemenyi_cd(k, n, α)
 
 This means that performance of `knn` and `ocsvm` is statistically speaking the same, but that of `knn` and `if` models is not.
 
+```julia
+algnames = ["knn", "ocsvm", "if"]
+crit_diag = PaperUtils.ranks2tikzcd(R, algnames, ncd)
+print(crit_diag)
+\begin{tikzpicture}[scale=1.0] 
+  \draw (1.0,0) -- (3.0,0); 
+  \foreach \x in {1,...,3} \draw (\x,0.10) -- (\x,-0.10) node[anchor=north]{$\x$}; 
+  \draw (1.0,0) -- (1.0,0.19999999999999998) -- (0.9, 0.19999999999999998) node[anchor=east] {knn}; 
+  \draw (2.125,0) -- (2.125,0.5) -- (0.9, 0.5) node[anchor=east] {ocsvm}; 
+  \draw (2.875,0) -- (2.875,0.2) -- (3.1, 0.2) node[anchor=west] {if}; 
+  \draw[line width=0.06cm,color=black,draw opacity=1.0] (0.97,0.1) -- (2.155,0.1); 
+  \draw[line width=0.06cm,color=black,draw opacity=1.0] (2.095,0.2) -- (2.905,0.2); 
+ \end{tikzpicture} 
+
+# save the string to file
+PaperUtils.string2file("tikz/example.tikz", crit_diag)
+```
