@@ -74,4 +74,4 @@ print(crit_diag)
 # save the string to file
 PaperUtils.string2file("tikz/example.tikz", crit_diag)
 ```
-<img src="tikz/example.png" alt="critical difference diagram" width="100"/>
+<img src="tikz/example.png" alt="critical difference diagram" width="300"/>
