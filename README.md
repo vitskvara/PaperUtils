@@ -55,7 +55,7 @@ ncd = PaperUtils.nemenyi_cd(k, n, α)
 1.451190106751196
 ```
 
-This means that performance of `knn` and `ocsvm` is statistically speaking the same, but that of `knn` and `if` models is not. We can show this in a **critical difference diagram** where models with the same performance are connected with a horizontal band.
+This means that performance of `knn` and `ocsvm` is statistically speaking the same, but that of `knn` and `if` models is not. We can show this in a **critical difference diagram** where the mean ranks of models are drawn and the models with the same performance are connected with a horizontal band.
 
 ```julia
 algnames = ["knn", "ocsvm", "if"]
