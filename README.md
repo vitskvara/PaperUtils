@@ -7,6 +7,7 @@ Computation of ranks across datasets:
 using PaperUtils
 using DataFrames
 
+# this contains AUC values for individual models on different datasets
 perf_df = DataFrame(
 	:dataset =>  ["abalone", "haberman", "iris", "yeast"],
 	:knn => [0.85, 0.71, 0.98, 0.78],
@@ -22,6 +23,7 @@ perf_df = DataFrame(
 │ 3   │ iris     │ 0.98    │ 0.93    │ 0.93    │
 │ 4   │ yeast    │ 0.78    │ 0.7     │ 0.65    │
 
+# here we get the ranks (ties receive average rank)
 rank_df = PaperUtils.rankdf(perf_df)
 5×4 DataFrame
 │ Row │ dataset   │ knn     │ ocsvm   │ if      │
