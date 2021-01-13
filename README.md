@@ -34,7 +34,7 @@ rank_df = PaperUtils.rankdf(perf_df)
 │ 5   │ mean rank │ 1.0     │ 2.125   │ 2.875   │
 ```
 
-Friedman test:
+Friedman test decides whether the performance of models based on mean ranks is the same for all comapred models:
 
 ```julia
 R = Array(rank_df[end, 2:end])
