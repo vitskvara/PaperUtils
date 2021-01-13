@@ -55,7 +55,7 @@ ncd = PaperUtils.nemenyi_cd(k, n, α)
 1.451190106751196
 ```
 
-This means that performance of `knn` and `ocsvm` is statistically speaking the same, but that of `knn` and `if` models is not.
+This means that performance of `knn` and `ocsvm` is statistically speaking the same, but that of `knn` and `if` models is not. We can show this in a **critical difference diagram**.
 
 ```julia
 algnames = ["knn", "ocsvm", "if"]
@@ -74,3 +74,4 @@ print(crit_diag)
 # save the string to file
 PaperUtils.string2file("tikz/example.tikz", crit_diag)
 ```
+![critical difference diagram](https://github.com/vitskvara/PaperUtils.jl/blob/master/tikz/example.png?raw=true)
