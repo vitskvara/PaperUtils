@@ -122,23 +122,24 @@ Convert DataFrame to a LaTex table.
 """
 function df2tex(df, caption=""; label = "", pos = "h", align = "c",
     fitcolumn = false, lasthline = false, firstvline = false,
-    asterisk = false, fittext=false, vertcolnames = false)
+    asterisk = false, fittext=false, vertcolnames = false,
+    column_aliases = nothing)
     @assert !(fitcolumn & fittext)
     cnames = names(df)
     nrows, ncols = size(df)
 
     # create the table beginning
     if asterisk
-        s = "\\begin{table*} \n "
+        s = "\\begin{table*}[$pos] \n "
     else
-        s = "\\begin{table} \n "
+        s = "\\begin{table}[$pos] \n "
     end
     if fitcolumn
-        s = string(s, "\\center \n \\resizebox{\\columnwidth}{!}{ \n \\begin{tabular}[$pos]{")
+        s = string(s, "\\center \n \\resizebox{\\columnwidth}{!}{ \n \\begin{tabular}{")
     elseif fittext
-        s = string(s, "\\center \n \\resizebox{\\textwidth}{!}{ \n \\begin{tabular}[$pos]{")
+        s = string(s, "\\center \n \\resizebox{\\textwidth}{!}{ \n \\begin{tabular}{")
     else
-        s = string(s, "\\center \n \\begin{tabular}[$pos]{")
+        s = string(s, "\\center \n \\begin{tabular}{")
     end
     for n in 1:ncols
         if firstvline && n == 1
@@ -152,10 +153,12 @@ function df2tex(df, caption=""; label = "", pos = "h", align = "c",
     # create the header
     s = wspad(s,2)
     for (i,name) in enumerate(names(df))
+        # rename the columns if aliases are supplied
+        col_label = isnothing(column_aliases) ? name : column_aliases[i] 
         if vertcolnames && i > 1
-            s = string(s, "\\rotatebox{90}{$name} & ")
+            s = string(s, "\\rotatebox{90}{$(col_label)} & ")
         else
-            s = string(s, "$name & ")
+            s = string(s, "$(col_label) & ")
         end
     end
     s = eol(s)
@@ -313,3 +316,51 @@ Round a df, convert columns defined in cols to string and rpad with zeros.
 """
 round_string_rpad(df, ndecimal, cols) = 
     PaperUtils.rpaddf(PaperUtils.cols2string(PaperUtils.rounddf(df, ndecimal, cols)), ndecimal)
+
+
+"""
+    shade_row(r)
+
+Ignores the first element of the row. Then provides shading for the top 3 elements.
+"""
+function shade_row!(r; rev=false)
+    levels = [45, 30, 15]
+    valsf = Meta.parse.([x for x in r[2:end]])
+    uvalsf = unique(valsf)
+    sortinds = sortperm(uvalsf, rev=!rev)
+
+    for (i, lvl) in zip(sortinds[1:min(length(sortinds), length(levels))], levels)
+        inds = valsf .== uvalsf[i]
+        for k in 1:length(inds)
+            if inds[k]
+                r[2:end][k] = "\\cellcolor{gray!$(lvl)} " * r[2:end][k]
+            end
+        end
+    end
+end
+
+"""
+    shade_rows!(df; last_rev=false)
+
+Shade the top 3 results in row for all rows.
+"""
+function shade_rows!(df; last_rev=false)
+    rows = eachrow(df)
+    if last_rev
+        map(shade_row!, rows[1:end-1])
+        shade_row!(rows[end], rev=true)
+    else
+        map(shade_row!, rows)
+    end
+end
+
+"""
+    shade_rows(df; last_rev=false)
+
+Shade the top 3 results in row for all rows.
+"""
+function shade_rows(df; kwargs...)
+    _df = deepcopy(df)
+    shade_rows!(_df; kwargs...)
+    _df
+end

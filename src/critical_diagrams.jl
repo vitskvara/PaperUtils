@@ -46,7 +46,13 @@ function ranks2tikzcd(ranks, algnames, c, caption = ""; scale=1.0,
     # end of figure
     s = wspad(s, 1)
     s = string(s, "\\end{tikzpicture} \n")
-    
+    if caption!=""
+        s = string(s, " \\caption{$caption} \n")
+    end
+    if label!=""
+        s = string(s, " \\label{$label} \n")
+    end
+
     return s
 end
 
